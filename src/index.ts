@@ -90,7 +90,7 @@ const validateRequest = (req: Request, res: Response, next: NextFunction) => {
 // Endpoint for LLM requests
 app.post("/chat/completions", validateRequest, (req: Request, res: Response) => {
     const llmRequest: LLMRequest = req.body;
-    console.log("Received request", llmRequest);
+    console.log("Received request", JSON.stringify(llmRequest));
 
     const response = "This is my response...";
 
@@ -122,7 +122,7 @@ app.post("/chat/completions", validateRequest, (req: Request, res: Response) => 
             total_tokens,
         }
     };
-    console.log("Generated response", llmResponse);
+    console.log("Generated response", JSON.stringify(llmResponse));
 
     res.json(llmResponse);
 });
