@@ -66,11 +66,16 @@ app.use(bodyParser.json());
 
 // Middleware for request validation
 const validateRequest = (req: Request, res: Response, next: NextFunction) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) return next(new HttpError(401, "Missing Authorization header"));
-    if (authHeader.indexOf("Bearer ") !== 0) return next(new HttpError(401, "Bearer prefix not found in Authorization header"));
-    const bearerToken = authHeader.substring(7);
-    if (bearerToken !== process.env.BEARER_TOKEN) return next(new HttpError(401, "Invalid bearer token"));
+    let authHeader = req.headers.authorization;
+    if (!authHeader) {
+        authHeader = req.headers["api-key"] as string;
+        if (!authHeader) return next(new HttpError(401, "No Authorization or api-key header found"));
+        if (authHeader !== process.env.BEARER_TOKEN) return next(new HttpError(401, "Invalid api-key supplied"));
+    } else {
+        if (authHeader.indexOf("Bearer ") !== 0) return next(new HttpError(401, "Bearer prefix not found in Authorization header"));
+        const bearerToken = authHeader.substring(7);
+        if (bearerToken !== process.env.BEARER_TOKEN) return next(new HttpError(401, "Invalid bearer token"));
+    }
     next();
 };
 
