@@ -39,3 +39,10 @@ heroku config:set BEARER_TOKEN=<your bearer token>
     5. Specify the bearer token you configured when deploying the app
 5. Click Connect
 6. Bob's you uncle...
+
+## The API call
+The API call made to the model is very simple and is a POST message to `/chat/completions`. The body holds the prompt and configuration being sent to the model. A sample `curl` request is like below (`abc123` being the configured bearer token).
+
+```
+curl http://localhost:3000/chat/completions -X POST -H "Content-Type: application/json" -H "api-key: abc12" -d '{"messages": [{"content": "Hello World", "role": "user"}],"model": "my-model-v1", "max_tokens": 4096, "n": 1, "temperature": 1}'
+```
