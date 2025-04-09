@@ -52,6 +52,13 @@ type LLMResponseUsage = {
     total_tokens: number;
 };
 
+type LLMError = {
+    code?: number;
+    message: string;
+    param?: string;
+    type: string;
+}
+
 class HttpError extends Error {
   status: number;
 
@@ -66,6 +73,7 @@ app.use(bodyParser.json());
 
 // Middleware for request validation
 const validateRequest = (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Received request for <${req.path}>`);
     let authHeader = req.headers.authorization;
     if (!authHeader) {
         authHeader = req.headers["api-key"] as string;
@@ -105,7 +113,7 @@ app.post("/chat/completions", validateRequest, (req: Request, res: Response) => 
                 finish_reason: "stop",
             },
         ],
-        created: Date.now(),
+        created: Date.now() / 1000,
         model: llmRequest.model,
         object: "chat.completion",
         usage: {
@@ -114,9 +122,21 @@ app.post("/chat/completions", validateRequest, (req: Request, res: Response) => 
             total_tokens,
         }
     };
+    console.log("Generated response", llmResponse);
 
     res.json(llmResponse);
 });
+
+app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
+  console.error('Error occurred:', err);
+  const statusCode = err.status || 500;
+  res.status(statusCode).json({
+    message: err.message,
+    code: statusCode,
+    type: "error",
+    param: undefined
+  } as LLMError);
+})
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
