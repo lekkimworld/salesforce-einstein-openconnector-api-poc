@@ -82,6 +82,7 @@ const validateRequest = (req: Request, res: Response, next: NextFunction) => {
 // Endpoint for LLM requests
 app.post("/chat/completions", validateRequest, (req: Request, res: Response) => {
     const llmRequest: LLMRequest = req.body;
+    console.log("Received request", llmRequest);
 
     // Simulate LLM response (replace with actual LLM logic)
     const llmResponse: LLMResponse = {
@@ -97,9 +98,9 @@ app.post("/chat/completions", validateRequest, (req: Request, res: Response) => 
             },
         ],
         usage: {
-            prompt_tokens: llmRequest.prompt.split(" ").length,
+            prompt_tokens: (llmRequest.prompt || "").split(" ").length,
             completion_tokens: 10,
-            total_tokens: llmRequest.prompt.split(" ").length + 10,
+            total_tokens: (llmRequest.prompt || "").split(" ").length + 10,
         },
     };
 
