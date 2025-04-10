@@ -93,8 +93,8 @@ app.post("/chat/completions", validateRequest, (req: Request, res: Response) => 
     const llmRequest: LLMRequest = req.body;
     console.log("Received request", JSON.stringify(llmRequest));
 
-    const response = faker.lorem.paragraph({min: 1, max:3});
-
+    const response = faker.lorem.paragraph({min: llmRequest.n || 1, max: (llmRequest.n || 1) + 5});
+    
     const completion_tokens = Math.ceil(response.length / 4);
     const prompt_tokens = Math.ceil(llmRequest.messages.reduce((total, msg) => {
         return total + msg.content.length;
