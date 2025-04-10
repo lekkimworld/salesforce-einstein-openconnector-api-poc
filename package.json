@@ -10,6 +10,7 @@
     "license": "MIT",
     "description": "Very simple proof-of-concept as to how you can implement the Salesforce Einstein LLM Open Conector API that allows you to bring any LLM into Salesforce Einstein Studio",
     "dependencies": {
+        "@faker-js/faker": "^9.6.0",
         "@types/express": "^5.0.1",
         "@types/node": "^22.14.0",
         "body-parser": "^2.2.0",

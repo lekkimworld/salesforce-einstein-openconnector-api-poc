@@ -3,6 +3,7 @@ import express, { Request, Response, NextFunction } from "express";
 import bodyParser from "body-parser";
 import {config as dotenv_config} from "dotenv";
 dotenv_config();
+import {faker} from "@faker-js/faker"
 
 // Types and Interfaces based on the OpenAPI spec
 type LLMRequestMessage = {
@@ -92,7 +93,7 @@ app.post("/chat/completions", validateRequest, (req: Request, res: Response) => 
     const llmRequest: LLMRequest = req.body;
     console.log("Received request", JSON.stringify(llmRequest));
 
-    const response = "This is my response...";
+    const response = faker.lorem.paragraph({min: 1, max:3});
 
     const completion_tokens = Math.ceil(response.length / 4);
     const prompt_tokens = Math.ceil(llmRequest.messages.reduce((total, msg) => {
