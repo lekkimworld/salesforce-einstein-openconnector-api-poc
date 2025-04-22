@@ -4,6 +4,9 @@ import bodyParser from "body-parser";
 import {config as dotenv_config} from "dotenv";
 dotenv_config();
 import {faker} from "@faker-js/faker"
+import { randomUUID } from "crypto";
+
+const CHARS_PER_TOKEN = 4;
 
 // Types and Interfaces based on the OpenAPI spec
 type LLMRequestMessage = {
@@ -40,13 +43,6 @@ type LLMResponseChoiceMessage = {
     role: "assistant"
 }
 
-interface Logprobs {
-    tokens: string[];
-    token_logprobs: number[];
-    top_logprobs: Record<string, number>[];
-    text_offset: number[];
-}
-
 type LLMResponseUsage = {
     completion_tokens: number;
     prompt_tokens: number;
@@ -69,6 +65,7 @@ class HttpError extends Error {
   }
 }
 
+// define app and parse requests as json
 const app = express();
 app.use(bodyParser.json());
 
@@ -90,20 +87,25 @@ const validateRequest = (req: Request, res: Response, next: NextFunction) => {
 
 // Endpoint for LLM requests
 app.post("/chat/completions", validateRequest, (req: Request, res: Response) => {
+    // just cast request - in real life do validation
     const llmRequest: LLMRequest = req.body;
     console.log("Received request", JSON.stringify(llmRequest));
 
+    // fake response
     const response = faker.lorem.paragraph({min: llmRequest.n || 1, max: (llmRequest.n || 1) + 5});
     
-    const completion_tokens = Math.ceil(response.length / 4);
-    const prompt_tokens = Math.ceil(llmRequest.messages.reduce((total, msg) => {
-        return total + msg.content.length;
-    }, 0) / 4);
+    // calc number of tokens
+    const completion_tokens = Math.ceil(response.length / CHARS_PER_TOKEN);
+    const prompt_tokens = Math.ceil(
+        llmRequest.messages.reduce((total, msg) => {
+            return total + msg.content.length;
+        }, 0) / CHARS_PER_TOKEN
+    );
     const total_tokens = completion_tokens + prompt_tokens;
 
     // Simulate LLM response (replace with actual LLM logic)
     const llmResponse: LLMResponse = {
-        id: "cmpl-123",
+        id: randomUUID().toString(),
         choices: [
             {
                 message: {
@@ -125,9 +127,13 @@ app.post("/chat/completions", validateRequest, (req: Request, res: Response) => 
     };
     console.log("Generated response", JSON.stringify(llmResponse));
 
+    // send response
     res.json(llmResponse);
 });
 
+/**
+ * Error handler
+ */
 app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
   console.error('Error occurred:', err);
   const statusCode = err.status || 500;
@@ -139,6 +145,8 @@ app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
   } as LLMError);
 })
 
+
+// listen
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);

@@ -6,6 +6,8 @@ This repo holds a very simple proof-of-concept as to how you can implement the [
 Below are the supported environment variables:
 * `BEARER_TOKEN` (required) Bearer token value to use either as part of an `Authorization` header following `Bearer ` or using as-is in a `api-key` header
 * `PORT` (optional) The port to run the Express app at. Defaults to 3000.
+* `CLIENT_ID` (optional) If using the `scripts/invoke_models_api.sh` script this is the client id for the credentials flow
+* `CLIENT_SECRET` (optional) If using the `scripts/invoke_models_api.sh` script this is the client secret for the credentials flow
 
 ## Installing locally
 ```bash
