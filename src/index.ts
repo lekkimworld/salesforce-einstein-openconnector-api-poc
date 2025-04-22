@@ -116,7 +116,7 @@ app.post("/chat/completions", validateRequest, (req: Request, res: Response) => 
                 finish_reason: "stop",
             },
         ],
-        created: Date.now() / 1000,
+        created: Math.round(Date.now() / 1000),
         model: llmRequest.model,
         object: "chat.completion",
         usage: {
