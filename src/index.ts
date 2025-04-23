@@ -3,10 +3,40 @@ import express, { Request, Response, NextFunction } from "express";
 import bodyParser from "body-parser";
 import {config as dotenv_config} from "dotenv";
 dotenv_config();
-import {faker} from "@faker-js/faker"
+import {fa, faker} from "@faker-js/faker"
 import { randomUUID } from "crypto";
 
 const CHARS_PER_TOKEN = 4;
+
+interface ResponseGenerator {
+    execute(llmRequest: LLMRequest): Promise<string>;
+}
+
+const generators : Record<"default" | string, ResponseGenerator> = {
+    "default": {
+        async execute(llmRequest) {
+            let response = faker.lorem.paragraph({ min: llmRequest.n || 1, max: (llmRequest.n || 1) + 5 });
+            return response;
+        },
+    },
+    "fake-case-classification-v1": {
+        async execute(llmRequest) {
+            const types = [
+                "Cargo/Container",
+                "Departure And In-Transit Execution",
+                "Documentation",
+                "Charges, Invoice & Payment",
+                "Booking",
+                "Prior To Booking"
+            ];
+
+            // fake response
+            return JSON.stringify({
+                "type": types[Math.floor(Math.random() * types.length)],
+            });
+        },
+    }
+}
 
 // Types and Interfaces based on the OpenAPI spec
 type LLMRequestMessage = {
@@ -86,13 +116,16 @@ const validateRequest = (req: Request, res: Response, next: NextFunction) => {
 };
 
 // Endpoint for LLM requests
-app.post("/chat/completions", validateRequest, (req: Request, res: Response) => {
+app.post("/chat/completions", validateRequest, async (req: Request, res: Response) => {
+    const id = randomUUID().toString();
+    
     // just cast request - in real life do validation
     const llmRequest: LLMRequest = req.body;
-    console.log("Received request", JSON.stringify(llmRequest));
+    console.log(`<${id}> Received request`, JSON.stringify(llmRequest));
 
-    // fake response
-    const response = faker.lorem.paragraph({min: llmRequest.n || 1, max: (llmRequest.n || 1) + 5});
+    // get response
+    const generator = generators[llmRequest.model] || generators["default"]!;
+    const response = await generator.execute(llmRequest);
     
     // calc number of tokens
     const completion_tokens = Math.ceil(response.length / CHARS_PER_TOKEN);
@@ -105,12 +138,12 @@ app.post("/chat/completions", validateRequest, (req: Request, res: Response) => 
 
     // Simulate LLM response (replace with actual LLM logic)
     const llmResponse: LLMResponse = {
-        id: randomUUID().toString(),
+        id: id,
         choices: [
             {
                 message: {
                     role: "assistant",
-                    content: response
+                    content: response,
                 },
                 index: 0,
                 finish_reason: "stop",
@@ -123,12 +156,17 @@ app.post("/chat/completions", validateRequest, (req: Request, res: Response) => 
             completion_tokens,
             prompt_tokens,
             total_tokens,
-        }
+        },
     };
-    console.log("Generated response", JSON.stringify(llmResponse));
+    console.log(`<${id}> Generated response`, JSON.stringify(llmResponse));
 
-    // send response
-    res.json(llmResponse);
+    const delay = Math.round(Math.random() * (Number.parseInt(process.env.DELAY_SECS as string) || 10) * 1000);
+    console.log(`<${id}> Faking delay <${delay}>`);
+    global.setTimeout(() => {
+        // send response
+        res.json(llmResponse);
+        console.log(`<${id}> Sent response`);
+    }, delay)
 });
 
 /**
