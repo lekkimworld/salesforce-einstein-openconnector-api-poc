@@ -1,6 +1,6 @@
 # Salesforce Einstein LLM Open Connector API PoC
 
-This repo holds a very simple proof-of-concept as to how you can implement the [Salesforce Einstein LLM Open Conector API](https://github.com/salesforce/einstein-platform) that allows you to bring any LLM into Salesforce Einstein Studio. Once the model has been configured you can use it from anywhere LLM's can be used in Salesforce including Prompt Builder.
+This repo holds a very simple proof-of-concept as to how you can implement the [Salesforce Einstein LLM Open Connector API](https://github.com/salesforce/einstein-platform) that allows you to bring any LLM into Salesforce Einstein Studio. Once the model has been configured you can use it from anywhere LLM's can be used in Salesforce including Prompt Builder.
 
 ## Environment variables
 Below are the supported environment variables:
